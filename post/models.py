@@ -27,7 +27,7 @@ class HashTag(models.Model):
 class Post(WhoDidIt):
     title = models.CharField(max_length=255, null=True, blank=True)
     content = models.TextField()
-    image = models.ImageField(null=True, upload_to=get_image_file_path)
+    image = models.ImageField(null=True, blank=True, upload_to=get_image_file_path)
     hashtags = models.ManyToManyField(HashTag, related_name="post", blank=True)
     profile = models.ForeignKey(
         UserProfile,
@@ -36,7 +36,7 @@ class Post(WhoDidIt):
     )
 
     def __str__(self):
-        return f"Post by {self.created_by}"
+        return self.title
 
 
 class Like(models.Model):
