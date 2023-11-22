@@ -20,15 +20,19 @@ class UserProfile(WhoDidIt):
     bio = models.TextField()
     followers = models.ForeignKey(
         settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
         on_delete=models.CASCADE,
         related_name="profiles_followers",
     )
     following = models.ForeignKey(
         settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
         on_delete=models.CASCADE,
         related_name="profiles_following",
     )
-    image = models.ImageField(null=True, upload_to=get_image_file_path)
+    image = models.ImageField(blank=True, null=True, upload_to=get_image_file_path)
 
     def __str__(self):
         return f"{self.created_by}"
