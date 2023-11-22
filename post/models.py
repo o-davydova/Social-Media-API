@@ -28,11 +28,11 @@ class Post(WhoDidIt):
     title = models.CharField(max_length=255, null=True, blank=True)
     content = models.TextField()
     image = models.ImageField(null=True, upload_to=get_image_file_path)
-    hashtags = models.ManyToManyField(HashTag, related_name="posts", blank=True)
+    hashtags = models.ManyToManyField(HashTag, related_name="post", blank=True)
     profile = models.ForeignKey(
         UserProfile,
         on_delete=models.CASCADE,
-        related_name="posts",
+        related_name="post",
     )
 
     def __str__(self):
