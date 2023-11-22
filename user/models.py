@@ -51,7 +51,7 @@ class User(AbstractUser):
 
 class WhoDidIt(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, editable=False)
     created_by = models.ForeignKey(
         to=User,
         editable=False,
