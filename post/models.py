@@ -36,7 +36,7 @@ class Post(WhoDidIt):
     )
 
     def __str__(self):
-        return f"{self.created_by}"
+        return f"Post by {self.created_by}"
 
 
 class Like(models.Model):
@@ -50,3 +50,15 @@ class Like(models.Model):
         on_delete=models.CASCADE,
         related_name="likes"
     )
+
+
+class Comment(WhoDidIt):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="comments"
+    )
+    content = models.TextField()
+
+    def __str__(self):
+        return f"Comment by {self.created_by}"
