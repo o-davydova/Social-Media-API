@@ -1,5 +1,7 @@
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.utils.translation import gettext as _
 
 
@@ -45,3 +47,17 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+
+
+class WhoDidIt(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        to=User,
+        editable=False,
+        on_delete=models.CASCADE,
+        related_name="%(class)s",
+    )
+
+    class Meta:
+        abstract = True
