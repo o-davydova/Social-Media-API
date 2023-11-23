@@ -22,3 +22,16 @@ class UserSerializer(serializers.ModelSerializer):
             user.save()
 
         return user
+
+
+class WhoDidItSerializer(serializers.Serializer):
+    created_at = serializers.DateTimeField(read_only=True)
+    updated_at = serializers.DateTimeField(read_only=True)
+    created_by = UserSerializer(many=False, read_only=True)
+
+    class Meta:
+        fields = (
+            "created_at",
+            "updated_at",
+            "created_by",
+        )
