@@ -2,7 +2,7 @@ import os
 import uuid
 
 from django.conf import settings
-from django.db import models
+from django.db import models, IntegrityError
 from django.utils.text import slugify
 
 from user.models import WhoDidIt
@@ -33,6 +33,14 @@ class UserProfile(WhoDidIt):
         related_name="profiles_following",
     )
     image = models.ImageField(blank=True, null=True, upload_to=get_image_file_path)
+
+    def validate_created_by(self):
+        if UserProfile.objects.filter(created_by=self.created_by):
+            raise IntegrityError("Profile already exists for this user.")
+
+    def save(self, *args, **kwargs):
+        self.validate_created_by()
+        super(UserProfile, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.created_by}"
