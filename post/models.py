@@ -26,13 +26,15 @@ class HashTag(models.Model):
 
 class Post(WhoDidIt):
     title = models.CharField(max_length=255, null=True, blank=True)
+    hashtags = models.ManyToManyField(HashTag, related_name="posts", blank=True)
     content = models.TextField()
-    image = models.ImageField(null=True, blank=True, upload_to=get_image_file_path)
-    hashtags = models.ManyToManyField(HashTag, related_name="post", blank=True)
+    image = models.ImageField(
+        null=True, blank=True, upload_to=get_image_file_path
+    )
     profile = models.ForeignKey(
         UserProfile,
         on_delete=models.CASCADE,
-        related_name="post",
+        related_name="posts",
     )
 
     def __str__(self):
@@ -41,22 +43,16 @@ class Post(WhoDidIt):
 
 class Like(models.Model):
     post = models.ForeignKey(
-        Post,
-        on_delete=models.CASCADE,
-        related_name="likes"
+        Post, on_delete=models.CASCADE, related_name="likes"
     )
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="likes"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="likes"
     )
 
 
 class Comment(WhoDidIt):
     post = models.ForeignKey(
-        Post,
-        on_delete=models.CASCADE,
-        related_name="comments"
+        Post, on_delete=models.CASCADE, related_name="comments"
     )
     content = models.TextField()
 
