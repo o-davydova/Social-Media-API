@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models, IntegrityError
 from django.utils.text import slugify
 
@@ -18,29 +18,47 @@ def get_image_file_path(instance, filename):
 
 class UserProfile(WhoDidIt):
     bio = models.TextField()
-    followers = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE,
-        related_name="profiles_followers",
+    image = models.ImageField(
+        blank=True, null=True, upload_to=get_image_file_path
     )
-    following = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE,
-        related_name="profiles_following",
-    )
-    image = models.ImageField(blank=True, null=True, upload_to=get_image_file_path)
 
     def validate_created_by(self):
-        if UserProfile.objects.filter(created_by=self.created_by):
+        if (
+            UserProfile.objects.filter(created_by=self.created_by)
+            and self.pk is None
+        ):
             raise IntegrityError("Profile already exists for this user.")
-
-    def save(self, *args, **kwargs):
-        self.validate_created_by()
-        super(UserProfile, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.created_by}"
+
+
+class UserProfileFollow(models.Model):
+    follower = models.ForeignKey(
+        UserProfile,
+        related_name="following",
+        on_delete=models.CASCADE,
+    )
+    following = models.ForeignKey(
+        UserProfile,
+        related_name="followers",
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["follower", "following"], name="unique_followers"
+            )
+        ]
+
+    def validate_following(self):
+        if self.follower == self.following:
+            raise ValidationError("Cannot follow/unfollow your own profile.")
+
+    def save(self, *args, **kwargs):
+        self.validate_following()
+        super(UserProfileFollow, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.follower} follows {self.following}"
