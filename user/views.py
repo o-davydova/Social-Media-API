@@ -37,3 +37,8 @@ class LogoutAllView(views.APIView):
             t, _ = BlacklistedToken.objects.get_or_create(token=token)
 
         return Response(status=status.HTTP_205_RESET_CONTENT)
+
+
+class WhoDidItMixin:
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
