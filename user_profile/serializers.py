@@ -55,6 +55,7 @@ class UserProfileDetailSerializer(UserProfileSerializer):
     following = serializers.SlugRelatedField(
         many=True, read_only=True, slug_field="following_id"
     )
+    posts = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
         model = UserProfile
