@@ -1,7 +1,5 @@
 import os
 import uuid
-
-from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
@@ -11,7 +9,7 @@ from user_profile.models import UserProfile
 
 def get_image_file_path(instance, filename):
     _, extension = os.path.splitext(filename)
-    filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
+    filename = f"{slugify(instance.title)}-{uuid.uuid4()}{extension}"
     dirname = f"{slugify(type(instance).__name__)}s/"
 
     return os.path.join("uploads/", dirname, filename)
@@ -21,7 +19,7 @@ class HashTag(models.Model):
     name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.name
+        return f"{self.id}: {self.name}"
 
 
 class Post(WhoDidIt):
@@ -38,7 +36,7 @@ class Post(WhoDidIt):
     )
 
     def __str__(self):
-        return self.title
+        return f"{self.id}: {self.title}"
 
 
 class Like(WhoDidIt):
@@ -64,4 +62,4 @@ class Comment(WhoDidIt):
     content = models.TextField()
 
     def __str__(self):
-        return f"Comment by {self.created_by}"
+        return f"{self.id}: {self.content} (by {self.created_by})"
