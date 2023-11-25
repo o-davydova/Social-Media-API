@@ -45,9 +45,16 @@ class Like(models.Model):
     post = models.ForeignKey(
         Post, on_delete=models.CASCADE, related_name="likes"
     )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="likes"
-    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["post_id", "created_by_id"], name="unique_likes"
+            )
+        ]
+
+    def __str__(self):
+        return f"Liked by {self.created_by}"
 
 
 class Comment(WhoDidIt):
