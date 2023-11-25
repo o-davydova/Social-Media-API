@@ -3,6 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from api.permissions import CanModifyOwnObjectOnly
 from user.views import WhoDidItMixin
 from user_profile.models import UserProfile, UserProfileFollow
 from user_profile.serializers import (
@@ -16,6 +17,9 @@ from user_profile.serializers import (
 
 class UserProfileViewSet(WhoDidItMixin, viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
+    permission_classes = [
+        CanModifyOwnObjectOnly,
+    ]
 
     def get_queryset(self):
         queryset = self.queryset.annotate(
