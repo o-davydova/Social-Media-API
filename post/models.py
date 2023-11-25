@@ -41,7 +41,7 @@ class Post(WhoDidIt):
         return self.title
 
 
-class Like(models.Model):
+class Like(WhoDidIt):
     post = models.ForeignKey(
         Post, on_delete=models.CASCADE, related_name="likes"
     )
