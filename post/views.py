@@ -58,6 +58,28 @@ class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
                 "hashtags"
             )
 
+        for param_name in ["email", "first_name", "last_name", "username"]:
+            param = self.request.query_params.get(param_name)
+
+            if param:
+                queryset = queryset.filter(
+                    **{f"created_by__{param_name}__icontains": param}
+                )
+
+        hashtags = self.request.query_params.get("hashtags")
+        title = self.request.query_params.get("title")
+        profile = self.request.query_params.get("profile")
+
+        if hashtags:
+            hashtags_ids = [int(str_id) for str_id in hashtags.split(",")]
+            queryset = queryset.filter(hashtags__id__in=hashtags_ids)
+
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+
+        if profile:
+            queryset = queryset.filter(profile=profile)
+
         return queryset
 
     def get_serializer_class(self):
