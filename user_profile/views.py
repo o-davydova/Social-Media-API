@@ -33,6 +33,18 @@ class UserProfileViewSet(WhoDidItMixin, viewsets.ModelViewSet):
                 "posts"
             )
 
+        for param_name in ["email", "first_name", "last_name", "username"]:
+            param = self.request.query_params.get(param_name)
+
+            if param:
+                queryset = queryset.filter(
+                    **{f"created_by__{param_name}__icontains": param}
+                )
+
+        created_by = self.request.query_params.get("user_id")
+        if created_by:
+            queryset = queryset.filter(created_by=created_by)
+
         return queryset
 
     def get_serializer_class(self):
