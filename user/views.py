@@ -1,5 +1,5 @@
 from rest_framework import generics, views, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.token_blacklist.models import (
@@ -13,20 +13,18 @@ from user.serializers import UserSerializer, UserDetailSerializer
 
 class CreateUserView(generics.CreateAPIView):
     serializer_class = UserSerializer
+    permission_classes = (AllowAny,)
 
 
 class ManageUserView(generics.RetrieveUpdateAPIView):
     serializer_class = UserDetailSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         return self.request.user
 
 
 class LogoutView(views.APIView):
-    permission_classes = (IsAuthenticated,)
-
     def post(self, request):
         try:
             refresh_token = request.data["refresh_token"]
@@ -39,8 +37,6 @@ class LogoutView(views.APIView):
 
 
 class LogoutAllView(views.APIView):
-    permission_classes = (IsAuthenticated,)
-
     def post(self, request):
         tokens = OutstandingToken.objects.filter(user_id=request.user.id)
         for token in tokens:

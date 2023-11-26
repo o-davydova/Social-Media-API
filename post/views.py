@@ -1,11 +1,12 @@
-from django.contrib.auth import get_user_model
 from django.db.models import Count
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from api.permissions import CanModifyOwnObjectOnly
+from user.views import WhoDidItMixin
+from user_profile.models import UserProfile
 from post.models import HashTag, Like, Comment, Post
 from post.serializers import (
     HashTagSerializer,
@@ -16,8 +17,6 @@ from post.serializers import (
     PostDetailSerializer,
     PostImageSerializer,
 )
-from user.views import WhoDidItMixin
-from user_profile.models import UserProfile
 
 
 class HashTagViewSet(viewsets.ModelViewSet):
@@ -29,6 +28,7 @@ class LikeViewSet(WhoDidItMixin, viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     permission_classes = [
+        IsAuthenticatedOrReadOnly,
         CanModifyOwnObjectOnly,
     ]
 
@@ -44,6 +44,7 @@ class CommentViewSet(WhoDidItMixin, viewsets.ModelViewSet):
 class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
     queryset = Post.objects.all()
     permission_classes = [
+        IsAuthenticatedOrReadOnly,
         CanModifyOwnObjectOnly,
     ]
 

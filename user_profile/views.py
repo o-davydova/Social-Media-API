@@ -1,6 +1,7 @@
 from django.db.models import Count
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from api.permissions import CanModifyOwnObjectOnly
@@ -18,6 +19,7 @@ from user_profile.serializers import (
 class UserProfileViewSet(WhoDidItMixin, viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     permission_classes = [
+        IsAuthenticatedOrReadOnly,
         CanModifyOwnObjectOnly,
     ]
 
