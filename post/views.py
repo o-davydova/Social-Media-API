@@ -83,7 +83,7 @@ class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
         return queryset
 
     def get_serializer_class(self):
-        if self.action == "list":
+        if self.action in ["liked_posts", "list"]:
             return PostListSerializer
 
         if self.action == "retrieve":
@@ -99,6 +99,12 @@ class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
             return LikeSerializer
 
         return PostSerializer
+
+    def perform_create(self, serializer, *args, **kwargs):
+        user_profile = UserProfile.objects.get(
+            created_by_id=self.request.user.pk
+        )
+        super().perform_create(serializer, profile=user_profile)
 
     def _create_interaction(self, request):
         post = self.get_object()
@@ -126,12 +132,6 @@ class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def perform_create(self, serializer, *args, **kwargs):
-        user_profile = UserProfile.objects.get(
-            created_by_id=self.request.user.pk
-        )
-        super().perform_create(serializer, profile=user_profile)
 
     @action(
         methods=["POST"],
@@ -177,3 +177,14 @@ class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
     def add_comment(self, request, pk=None):
         """Endpoint for commenting a specific user post"""
         return self._create_interaction(request)
+
+    @action(
+        methods=["GET"],
+        detail=False,
+        url_path="liked-posts",
+    )
+    def liked_posts(self, request):
+        """Endpoint to retrieve the list of posts liked by the authenticated user."""
+        liked_posts = self.get_queryset().filter(likes__created_by=request.user)
+        serializer = self.get_serializer(liked_posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
