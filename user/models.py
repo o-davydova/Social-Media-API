@@ -1,7 +1,5 @@
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 from django.utils.translation import gettext as _
 
 
@@ -40,13 +38,18 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    username = None
     email = models.EmailField(_("email address"), unique=True)
+    username = models.CharField(max_length=150, unique=True, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+
+    def save(self, *args, **kwargs):
+        if not self.username:
+            self.username = self.email
+        super().save(*args, **kwargs)
 
 
 class WhoDidIt(models.Model):
