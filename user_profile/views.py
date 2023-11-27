@@ -1,4 +1,6 @@
 from django.db.models import Count
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -134,3 +136,37 @@ class UserProfileViewSet(WhoDidItMixin, viewsets.ModelViewSet):
                 {"message": "Not following this user."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="email",
+                description="Filter by email (ex. ?email=example@gmail.com)",
+                required=False,
+                type=OpenApiTypes.STR,
+            ),
+            OpenApiParameter(
+                name="first_name",
+                description="Filter by first name (ex. ?first_name=John)",
+                required=False,
+                type=OpenApiTypes.STR,
+            ),
+            OpenApiParameter(
+                name="last_name",
+                description="Filter by last name (ex. ?last_name=Smith)",
+                type=OpenApiTypes.STR,
+            ),
+            OpenApiParameter(
+                name="username",
+                description="Filter by username (ex. ?username=mate)",
+                type=OpenApiTypes.STR,
+            ),
+            OpenApiParameter(
+                name="created_by",
+                description="Filter by user id (ex. ?created_by=2)",
+                type=OpenApiTypes.STR,
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
