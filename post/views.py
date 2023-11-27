@@ -1,6 +1,7 @@
 from django.db.models import Count
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
@@ -41,8 +42,14 @@ class CommentViewSet(WhoDidItMixin, viewsets.ModelViewSet):
     ]
 
 
+class PostPagination(PageNumberPagination):
+    page_size = 3
+    max_page_size = 100
+
+
 class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
     queryset = Post.objects.all()
+    pagination_class = PostPagination
     permission_classes = [
         IsAuthenticatedOrReadOnly,
         CanModifyOwnObjectOnly,

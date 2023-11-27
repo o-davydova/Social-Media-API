@@ -1,6 +1,7 @@
 from django.db.models import Count
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
@@ -16,8 +17,14 @@ from user_profile.serializers import (
 )
 
 
+class UserProfilePagination(PageNumberPagination):
+    page_size = 3
+    max_page_size = 100
+
+
 class UserProfileViewSet(WhoDidItMixin, viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
+    pagination_class = UserProfilePagination
     permission_classes = [
         IsAuthenticatedOrReadOnly,
         CanModifyOwnObjectOnly,
