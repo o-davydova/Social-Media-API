@@ -22,19 +22,12 @@ class UserProfile(WhoDidIt):
         blank=True, null=True, upload_to=get_image_file_path
     )
 
-    def validate_created_by(self):
-        try:
-            profile_created_by = UserProfile.objects.get(created_by=self.created_by)
-
-            if profile_created_by:
-                raise IntegrityError("Profile already exists for this user.")
-
-        except UserProfile.DoesNotExist:
-            pass
-
-    def save(self, *args, **kwargs):
-        self.validate_created_by()
-        super(UserProfile, self).save(*args, **kwargs)
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["created_by"], name="unique_created_by"
+            )
+        ]
 
     def __str__(self):
         return f"{self.id}: {self.created_by}"
