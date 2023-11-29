@@ -34,6 +34,8 @@ class Post(WhoDidIt):
         on_delete=models.CASCADE,
         related_name="posts",
     )
+    is_visible = models.BooleanField(default=True)
+    scheduled_time = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.id}: {self.title}"
