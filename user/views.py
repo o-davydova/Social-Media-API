@@ -47,4 +47,4 @@ class LogoutAllView(views.APIView):
 
 class WhoDidItMixin:
     def perform_create(self, serializer, *args, **kwargs):
-        serializer.save(created_by=self.request.user, *args, **kwargs)
+        return serializer.save(created_by=self.request.user, *args, **kwargs)
