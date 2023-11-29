@@ -44,6 +44,8 @@ class PostSerializer(WhoDidItSerializer, serializers.ModelSerializer):
             "content",
             "image",
             "profile",
+            "is_visible",
+            "scheduled_time",
         ) + WhoDidItSerializer.Meta.fields
 
         read_only_fields = ("profile",)
