@@ -1,17 +1,20 @@
+import pytz
+from datetime import datetime
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 from django.db.models import Count
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiParameter,
-    OpenApiExample,
 )
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.response import Response
 
 from api.permissions import CanModifyOwnObjectOnly
+from post.tasks import post_schedule_create
 from user.views import WhoDidItMixin
 from user_profile.models import UserProfile
 from post.models import HashTag, Like, Comment, Post
@@ -118,7 +121,23 @@ class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
         user_profile = UserProfile.objects.get(
             created_by_id=self.request.user.pk
         )
-        super().perform_create(serializer, profile=user_profile)
+        post = super().perform_create(serializer, profile=user_profile)
+
+        scheduled_time = post.scheduled_time
+
+        if scheduled_time:
+            timezone = pytz.timezone("Europe/Kiev")
+            now = datetime.now().astimezone(timezone)
+
+            if scheduled_time < now:
+                raise ValidationError("Incorrect scheduled time.")
+
+            if post.is_visible:
+                raise ValidationError(
+                    "Scheduled time is not applicable if post is visible."
+                )
+
+            post_schedule_create.apply_async(args=[post.id], eta=scheduled_time)
 
     def _create_interaction(self, request):
         post = self.get_object()
