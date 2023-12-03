@@ -11,7 +11,7 @@ from user.models import WhoDidIt
 def get_image_file_path(instance, filename):
     _, extension = os.path.splitext(filename)
     filename = f"{slugify(instance.created_by)}-{uuid.uuid4()}{extension}"
-    dirname = f"{slugify(type(instance).__name__)}s/"
+    dirname = f"{slugify(type(instance).__name__)}s"
 
     return os.path.join("uploads/", dirname, filename)
 
