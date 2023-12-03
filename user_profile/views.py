@@ -44,6 +44,10 @@ class UserProfileViewSet(CoreModelMixin, viewsets.ModelViewSet):
                 "posts"
             )
 
+        queryset = self.filter_queryset(queryset)
+        return queryset
+
+    def filter_queryset(self, queryset):
         for param_name in ["email", "first_name", "last_name", "username"]:
             param = self.request.query_params.get(param_name)
 
