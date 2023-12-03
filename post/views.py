@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from django.db.models import Count
+from django.db.models import Count, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     extend_schema,
@@ -97,6 +97,9 @@ class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
         if profile:
             queryset = queryset.filter(profile=profile)
 
+        queryset = queryset.filter(
+            Q(is_visible=True) | Q(created_by=self.request.user)
+        )
         return queryset
 
     def get_serializer_class(self):
