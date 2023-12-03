@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
 
-from user.models import WhoDidIt
+from user.models import CoreModel
 
 
 def get_image_file_path(instance, filename):
@@ -16,7 +16,7 @@ def get_image_file_path(instance, filename):
     return os.path.join("uploads", dirname, filename)
 
 
-class UserProfile(WhoDidIt):
+class UserProfile(CoreModel):
     bio = models.TextField()
     image = models.ImageField(
         blank=True, null=True, upload_to=get_image_file_path

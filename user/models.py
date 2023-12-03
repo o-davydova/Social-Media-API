@@ -52,7 +52,7 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
 
-class WhoDidIt(models.Model):
+class CoreModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
     created_by = models.ForeignKey(

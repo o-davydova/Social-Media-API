@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from post.models import HashTag, Like, Comment, Post
-from user.serializers import WhoDidItSerializer
+from user.serializers import CoreModelSerializer
 
 
 class HashTagSerializer(serializers.ModelSerializer):
@@ -10,22 +10,22 @@ class HashTagSerializer(serializers.ModelSerializer):
         fields = ("id", "name")
 
 
-class LikeSerializer(WhoDidItSerializer, serializers.ModelSerializer):
+class LikeSerializer(CoreModelSerializer, serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = ("id", "post", "created_by")
 
 
-class CommentSerializer(WhoDidItSerializer, serializers.ModelSerializer):
+class CommentSerializer(CoreModelSerializer, serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ("id", "post", "content") + WhoDidItSerializer.Meta.fields
+        fields = ("id", "post", "content") + CoreModelSerializer.Meta.fields
 
 
-class CommentListSerializer(WhoDidItSerializer, serializers.ModelSerializer):
+class CommentListSerializer(CoreModelSerializer, serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ("id", "content") + WhoDidItSerializer.Meta.fields
+        fields = ("id", "content") + CoreModelSerializer.Meta.fields
 
 
 class PostImageSerializer(serializers.ModelSerializer):
@@ -34,7 +34,7 @@ class PostImageSerializer(serializers.ModelSerializer):
         fields = ("id", "image")
 
 
-class PostSerializer(WhoDidItSerializer, serializers.ModelSerializer):
+class PostSerializer(CoreModelSerializer, serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = (
@@ -46,7 +46,7 @@ class PostSerializer(WhoDidItSerializer, serializers.ModelSerializer):
             "profile",
             "is_visible",
             "scheduled_time",
-        ) + WhoDidItSerializer.Meta.fields
+        ) + CoreModelSerializer.Meta.fields
 
         read_only_fields = ("profile",)
 

@@ -40,7 +40,7 @@ class UserDetailSerializer(UserSerializer):
         extra_kwargs = {"password": {"write_only": True, "min_length": 5}}
 
 
-class WhoDidItSerializer(serializers.Serializer):
+class CoreModelSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
     created_by = UserSerializer(many=False, read_only=True)

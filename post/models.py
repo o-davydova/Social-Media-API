@@ -3,7 +3,7 @@ import uuid
 from django.db import models
 from django.utils.text import slugify
 
-from user.models import WhoDidIt
+from user.models import CoreModel
 from user_profile.models import UserProfile
 
 
@@ -22,7 +22,7 @@ class HashTag(models.Model):
         return f"{self.id}: {self.name}"
 
 
-class Post(WhoDidIt):
+class Post(CoreModel):
     title = models.CharField(max_length=255, null=True, blank=True)
     hashtags = models.ManyToManyField(
         HashTag, related_name="posts", blank=True
@@ -43,7 +43,7 @@ class Post(WhoDidIt):
         return f"{self.id}: {self.title}"
 
 
-class Like(WhoDidIt):
+class Like(CoreModel):
     post = models.ForeignKey(
         Post, on_delete=models.CASCADE, related_name="likes"
     )
@@ -59,7 +59,7 @@ class Like(WhoDidIt):
         return f"Liked by {self.created_by}"
 
 
-class Comment(WhoDidIt):
+class Comment(CoreModel):
     post = models.ForeignKey(
         Post, on_delete=models.CASCADE, related_name="comments"
     )

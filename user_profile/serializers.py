@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from user.serializers import WhoDidItSerializer
+from user.serializers import CoreModelSerializer
 from user_profile.models import UserProfile, UserProfileFollow
 
 
@@ -16,7 +16,7 @@ class UserProfileImageSerializer(serializers.ModelSerializer):
         fields = ("id", "image")
 
 
-class UserProfileSerializer(WhoDidItSerializer, serializers.ModelSerializer):
+class UserProfileSerializer(CoreModelSerializer, serializers.ModelSerializer):
     followers = UserProfileFollowSerializer(many=True, read_only=True)
     following = UserProfileFollowSerializer(many=True, read_only=True)
 
@@ -28,7 +28,7 @@ class UserProfileSerializer(WhoDidItSerializer, serializers.ModelSerializer):
             "image",
             "followers",
             "following",
-        ) + WhoDidItSerializer.Meta.fields
+        ) + CoreModelSerializer.Meta.fields
 
 
 class UserProfileListSerializer(UserProfileSerializer):
@@ -45,7 +45,7 @@ class UserProfileListSerializer(UserProfileSerializer):
             "followers_count",
             "following_count",
             "posts_count",
-        ) + WhoDidItSerializer.Meta.fields
+        ) + CoreModelSerializer.Meta.fields
 
 
 class UserProfileDetailSerializer(UserProfileSerializer):

@@ -1,14 +1,14 @@
 from django.contrib import admin
 
 from post.models import HashTag, Post, Like, Comment
-from user.admin import WhoDidItAdmin
+from user.admin import CoreModelAdmin
 
 admin.site.register(HashTag)
 admin.site.register(Like)
 
 
 @admin.register(Post)
-class PostAdmin(WhoDidItAdmin):
+class PostAdmin(CoreModelAdmin):
     list_display = ("title", "created_by", "created_at", "updated_at")
     search_fields = (
         "title",
@@ -21,7 +21,7 @@ class PostAdmin(WhoDidItAdmin):
 
 
 @admin.register(Comment)
-class CommentAdmin(WhoDidItAdmin):
+class CommentAdmin(CoreModelAdmin):
     list_display = (
         "post",
         "content",

@@ -45,6 +45,6 @@ class LogoutAllView(views.APIView):
         return Response(status=status.HTTP_205_RESET_CONTENT)
 
 
-class WhoDidItMixin:
+class CoreModelMixin:
     def perform_create(self, serializer, *args, **kwargs):
         return serializer.save(created_by=self.request.user, *args, **kwargs)

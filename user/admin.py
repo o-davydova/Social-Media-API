@@ -40,7 +40,7 @@ class UserAdmin(DjangoUserAdmin):
     ordering = ("email",)
 
 
-class WhoDidItAdmin(admin.ModelAdmin):
+class CoreModelAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if getattr(obj, "created_by", None) is None:
             obj.created_by = request.user

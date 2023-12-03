@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from api.permissions import CanModifyOwnObjectOnly
-from user.views import WhoDidItMixin
+from user.views import CoreModelMixin
 from user_profile.models import UserProfile, UserProfileFollow
 from user_profile.serializers import (
     UserProfileImageSerializer,
@@ -24,7 +24,7 @@ class UserProfilePagination(PageNumberPagination):
     max_page_size = 100
 
 
-class UserProfileViewSet(WhoDidItMixin, viewsets.ModelViewSet):
+class UserProfileViewSet(CoreModelMixin, viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     pagination_class = UserProfilePagination
     permission_classes = [

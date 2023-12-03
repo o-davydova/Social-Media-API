@@ -15,7 +15,7 @@ from drf_spectacular.utils import (
 
 from api.permissions import CanModifyOwnObjectOnly
 from post.tasks import post_schedule_create
-from user.views import WhoDidItMixin
+from user.views import CoreModelMixin
 from user_profile.models import UserProfile
 from post.models import HashTag, Like, Comment, Post
 from post.serializers import (
@@ -34,7 +34,7 @@ class HashTagViewSet(viewsets.ModelViewSet):
     serializer_class = HashTagSerializer
 
 
-class LikeViewSet(WhoDidItMixin, viewsets.ModelViewSet):
+class LikeViewSet(CoreModelMixin, viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     permission_classes = [
@@ -43,7 +43,7 @@ class LikeViewSet(WhoDidItMixin, viewsets.ModelViewSet):
     ]
 
 
-class CommentViewSet(WhoDidItMixin, viewsets.ModelViewSet):
+class CommentViewSet(CoreModelMixin, viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [
@@ -56,7 +56,7 @@ class PostPagination(PageNumberPagination):
     max_page_size = 100
 
 
-class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
+class PostViewSet(CoreModelMixin, viewsets.ModelViewSet):
     queryset = Post.objects.all()
     pagination_class = PostPagination
     permission_classes = [
