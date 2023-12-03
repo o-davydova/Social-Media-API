@@ -4,7 +4,10 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    replaces = [("post", "0003_post_is_visible"), ("post", "0004_post_scheduled_time")]
+    replaces = [
+        ("post", "0003_post_is_visible"),
+        ("post", "0004_post_scheduled_time"),
+    ]
 
     dependencies = [
         ("post", "0002_like_unique_likes"),

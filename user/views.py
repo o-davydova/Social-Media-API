@@ -32,7 +32,7 @@ class LogoutView(views.APIView):
             token.blacklist()
 
             return Response(status=status.HTTP_205_RESET_CONTENT)
-        except Exception as e:
+        except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

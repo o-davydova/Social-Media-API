@@ -140,7 +140,9 @@ class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
                     "Scheduled time is not applicable if post is visible."
                 )
 
-            post_schedule_create.apply_async(args=[post.id], eta=scheduled_time)
+            post_schedule_create.apply_async(
+                args=[post.id], eta=scheduled_time
+            )
 
     def _create_interaction(self, request):
         post = self.get_object()
@@ -220,8 +222,13 @@ class PostViewSet(WhoDidItMixin, viewsets.ModelViewSet):
         url_path="liked-posts",
     )
     def liked_posts(self, request):
-        """Endpoint to retrieve the list of posts liked by the authenticated user."""
-        liked_posts = self.get_queryset().filter(likes__created_by=request.user)
+        """
+        Endpoint to retrieve the list of posts
+        liked by the authenticated user.
+        """
+        liked_posts = self.get_queryset().filter(
+            likes__created_by=request.user
+        )
         serializer = self.get_serializer(liked_posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

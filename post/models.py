@@ -24,7 +24,9 @@ class HashTag(models.Model):
 
 class Post(WhoDidIt):
     title = models.CharField(max_length=255, null=True, blank=True)
-    hashtags = models.ManyToManyField(HashTag, related_name="posts", blank=True)
+    hashtags = models.ManyToManyField(
+        HashTag, related_name="posts", blank=True
+    )
     content = models.TextField()
     image = models.ImageField(
         null=True, blank=True, upload_to=get_image_file_path

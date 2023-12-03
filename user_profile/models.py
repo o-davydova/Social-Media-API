@@ -2,7 +2,7 @@ import os
 import uuid
 
 from django.core.exceptions import ValidationError
-from django.db import models, IntegrityError
+from django.db import models
 from django.utils.text import slugify
 
 from user.models import WhoDidIt
