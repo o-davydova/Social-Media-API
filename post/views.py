@@ -4,7 +4,10 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly,
+    IsAuthenticated,
+)
 from rest_framework.response import Response
 from django.db.models import Count, Q
 from drf_spectacular.types import OpenApiTypes
@@ -13,7 +16,7 @@ from drf_spectacular.utils import (
     OpenApiParameter,
 )
 
-from api.permissions import CanModifyOwnObjectOnly
+from api.permissions import IsOwnerOrReadOnly, IsOwnerOnly
 from post.tasks import post_schedule_create
 from user.views import CoreModelMixin
 from user_profile.models import UserProfile
@@ -26,6 +29,7 @@ from post.serializers import (
     PostListSerializer,
     PostDetailSerializer,
     PostImageSerializer,
+    CommentDetailSerializer,
 )
 
 
@@ -39,16 +43,21 @@ class LikeViewSet(CoreModelMixin, viewsets.ModelViewSet):
     serializer_class = LikeSerializer
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        CanModifyOwnObjectOnly,
+        IsOwnerOrReadOnly,
     ]
 
 
 class CommentViewSet(CoreModelMixin, viewsets.ModelViewSet):
     queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
     permission_classes = [
-        CanModifyOwnObjectOnly,
+        IsOwnerOrReadOnly,
     ]
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return CommentDetailSerializer
+
+        return CommentSerializer
 
 
 class PostPagination(PageNumberPagination):
@@ -61,7 +70,7 @@ class PostViewSet(CoreModelMixin, viewsets.ModelViewSet):
     pagination_class = PostPagination
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        CanModifyOwnObjectOnly,
+        IsOwnerOrReadOnly,
     ]
 
     def get_queryset(self):
@@ -90,6 +99,7 @@ class PostViewSet(CoreModelMixin, viewsets.ModelViewSet):
         hashtags = self.request.query_params.get("hashtags")
         title = self.request.query_params.get("title")
         profile = self.request.query_params.get("profile")
+        liked = self.request.query_params.get("liked")
 
         if hashtags:
             hashtags_ids = [int(str_id) for str_id in hashtags.split(",")]
@@ -101,13 +111,17 @@ class PostViewSet(CoreModelMixin, viewsets.ModelViewSet):
         if profile:
             queryset = queryset.filter(profile=profile)
 
+        if liked:
+            queryset = queryset.filter(likes__created_by=self.request.user)
+
         queryset = queryset.filter(
             Q(is_visible=True) | Q(created_by=self.request.user)
         )
+
         return queryset
 
     def get_serializer_class(self):
-        if self.action in ["liked_posts", "list"]:
+        if self.action == "list":
             return PostListSerializer
 
         if self.action == "retrieve":
@@ -115,12 +129,6 @@ class PostViewSet(CoreModelMixin, viewsets.ModelViewSet):
 
         if self.action == "upload_image":
             return PostImageSerializer
-
-        if self.action == "add_comment":
-            return CommentSerializer
-
-        if self.action in ["like", "remove_like"]:
-            return LikeSerializer
 
         return PostSerializer
 
@@ -148,22 +156,14 @@ class PostViewSet(CoreModelMixin, viewsets.ModelViewSet):
                 args=[post.id], eta=scheduled_time
             )
 
-    def _create_interaction(self, request):
-        post = self.get_object()
-        data = request.data.copy()
-        data["post"] = post.pk
-
-        serializer = self.get_serializer(data=data)
-
-        serializer.is_valid(raise_exception=True)
-        serializer.save(created_by=self.request.user)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
     @action(
         methods=["POST"],
         detail=True,
         url_path="upload-image",
+        permission_classes=[
+            IsAuthenticated,
+            IsOwnerOnly,
+        ],
     )
     def upload_image(self, request, pk=None):
         """Endpoint for uploading image to specific user profile"""
@@ -173,67 +173,6 @@ class PostViewSet(CoreModelMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
-        methods=["POST"],
-        detail=True,
-        url_path="like",
-    )
-    def like(self, request, pk=None):
-        """Endpoint for liking a specific user post"""
-        return self._create_interaction(request)
-
-    @action(
-        methods=["POST"],
-        detail=True,
-        url_path="remove-like",
-    )
-    def remove_like(self, request, pk=None):
-        """Endpoint for removing a like on specific user post"""
-        created_by = self.request.user
-        post = self.get_object()
-
-        like_instance = Like.objects.filter(
-            post=post,
-            created_by=created_by,
-        ).first()
-
-        if like_instance:
-            like_instance.delete()
-            return Response(
-                {"message": "Like removed successfully."},
-                status=status.HTTP_204_NO_CONTENT,
-            )
-        else:
-            return Response(
-                {"message": "Post was not liked."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-    @action(
-        methods=["POST"],
-        detail=True,
-        url_path="add-comment",
-    )
-    def add_comment(self, request, pk=None):
-        """Endpoint for commenting a specific user post"""
-        return self._create_interaction(request)
-
-    @action(
-        methods=["GET"],
-        detail=False,
-        url_path="liked-posts",
-    )
-    def liked_posts(self, request):
-        """
-        Endpoint to retrieve the list of posts
-        liked by the authenticated user.
-        """
-        liked_posts = self.get_queryset().filter(
-            likes__created_by=request.user
-        )
-        serializer = self.get_serializer(liked_posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
@@ -274,6 +213,11 @@ class PostViewSet(CoreModelMixin, viewsets.ModelViewSet):
                 name="hashtags",
                 description="Filter by hashtag ids (ex. ?hashtags=1,2)",
                 type={"type": "list", "items": {"type": "number"}},
+            ),
+            OpenApiParameter(
+                name="liked",
+                description="Filter liked posts (ex. ?liked=True)",
+                type=OpenApiTypes.BOOL,
             ),
         ],
     )
