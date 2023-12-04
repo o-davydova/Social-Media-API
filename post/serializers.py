@@ -17,15 +17,21 @@ class LikeSerializer(CoreModelSerializer, serializers.ModelSerializer):
 
 
 class CommentSerializer(CoreModelSerializer, serializers.ModelSerializer):
+    created_by = serializers.StringRelatedField()
+
     class Meta:
         model = Comment
         fields = ("id", "post", "content") + CoreModelSerializer.Meta.fields
 
 
-class CommentListSerializer(CoreModelSerializer, serializers.ModelSerializer):
+class CommentDetailSerializer(
+    CoreModelSerializer, serializers.ModelSerializer
+):
+    post = serializers.StringRelatedField(many=False, read_only=True)
+
     class Meta:
         model = Comment
-        fields = ("id", "content") + CoreModelSerializer.Meta.fields
+        fields = ("id", "content", "post") + CoreModelSerializer.Meta.fields
 
 
 class PostImageSerializer(serializers.ModelSerializer):
