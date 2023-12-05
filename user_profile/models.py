@@ -1,6 +1,7 @@
 import os
 import uuid
 
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
@@ -33,27 +34,28 @@ class UserProfile(CoreModel):
         return f"{self.id}: {self.created_by}"
 
 
-class UserProfileFollow(models.Model):
-    follower = models.ForeignKey(
-        UserProfile,
-        related_name="following",
-        on_delete=models.CASCADE,
-    )
+class UserProfileFollow(CoreModel):
     following = models.ForeignKey(
-        UserProfile,
-        related_name="followers",
+        to=get_user_model(),
         on_delete=models.CASCADE,
+        related_name="followers",
+    )
+    created_by = models.ForeignKey(
+        to=get_user_model(),
+        editable=False,
+        on_delete=models.CASCADE,
+        related_name="followings",
     )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["follower", "following"], name="unique_followers"
+                fields=["created_by", "following"], name="unique_follows"
             )
         ]
 
     def validate_following(self):
-        if self.follower == self.following:
+        if self.created_by == self.following:
             raise ValidationError("Cannot follow/unfollow your own profile.")
 
     def save(self, *args, **kwargs):
@@ -61,4 +63,4 @@ class UserProfileFollow(models.Model):
         super(UserProfileFollow, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.follower} follows {self.following}"
+        return f"{self.created_by} follows {self.following}"
