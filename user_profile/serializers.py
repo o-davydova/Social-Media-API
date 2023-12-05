@@ -7,7 +7,8 @@ from user_profile.models import UserProfile, UserProfileFollow
 class UserProfileFollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfileFollow
-        fields = ("id", "follower", "following")
+        fields = ("id", "created_by", "following")
+        read_only_fields = ("created_by",)
 
 
 class UserProfileImageSerializer(serializers.ModelSerializer):
@@ -17,8 +18,8 @@ class UserProfileImageSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(CoreModelSerializer, serializers.ModelSerializer):
-    followers = UserProfileFollowSerializer(many=True, read_only=True)
-    following = UserProfileFollowSerializer(many=True, read_only=True)
+    followings = serializers.SerializerMethodField(read_only=True)
+    followers = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserProfile
@@ -27,13 +28,21 @@ class UserProfileSerializer(CoreModelSerializer, serializers.ModelSerializer):
             "bio",
             "image",
             "followers",
-            "following",
+            "followings",
         ) + CoreModelSerializer.Meta.fields
+
+    def get_followings(self, obj):
+        qs = UserProfileFollow.objects.filter(created_by=obj.created_by)
+        return [follow.following_id for follow in qs]
+
+    def get_followers(self, obj):
+        qs = UserProfileFollow.objects.filter(following=obj.created_by)
+        return [follow.created_by_id for follow in qs]
 
 
 class UserProfileListSerializer(UserProfileSerializer):
     followers_count = serializers.IntegerField(read_only=True)
-    following_count = serializers.IntegerField(read_only=True)
+    followings_count = serializers.IntegerField(read_only=True)
     posts_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -43,24 +52,14 @@ class UserProfileListSerializer(UserProfileSerializer):
             "bio",
             "image",
             "followers_count",
-            "following_count",
+            "followings_count",
             "posts_count",
         ) + CoreModelSerializer.Meta.fields
 
 
 class UserProfileDetailSerializer(UserProfileSerializer):
-    followers = serializers.SlugRelatedField(
-        many=True, read_only=True, slug_field="follower_id"
-    )
-    following = serializers.SlugRelatedField(
-        many=True, read_only=True, slug_field="following_id"
-    )
     posts = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
         model = UserProfile
-        fields = UserProfileSerializer.Meta.fields + (
-            "followers",
-            "following",
-            "posts",
-        )
+        fields = UserProfileSerializer.Meta.fields + ("posts", "followings")
